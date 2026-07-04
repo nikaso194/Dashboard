@@ -264,8 +264,9 @@
   }
 
   .grid {
+    display: flex;
     display: grid;
-    grid-template-columns: repeat(2, 1fr);
+    grid-template-columns: repeat(4, 1fr);
     gap: 26px;
     align-items: start;
   }
@@ -278,7 +279,6 @@
   .card {
     position: relative;
     width: 100%;
-    min-height: 280px;
     aspect-ratio: 16 / 8; /* fallback until JS measures the real image and overrides this */
     border-radius: 18px;
     padding: 0;
@@ -303,14 +303,15 @@
     outline-offset: 3px;
   }
 
-  .card .bg-img {
+.card .bg-img {
     position: absolute;
     inset: 0;
     width: 100%;
     height: 100%;
-    object-fit: fill; /* safe once card ratio is set by JS to match the image exactly */
+    object-fit: contain;
+    object-position: center;
     z-index: 0;
-  }
+}
 
   .card .overlay-gradient {
     position: absolute;
@@ -332,10 +333,11 @@
   .card .text-block h3 {
     margin: 0 0 6px 0;
     font-family: 'Poppins', 'Inter', sans-serif;
-    font-size: 1.4rem;
+    font-size: 1rem;
     font-weight: 700;
     letter-spacing: 0.02em;
     text-shadow: 0 2px 10px rgba(0,0,0,0.8);
+    justify-content: center;
   }
 
   .card .text-block p {
@@ -568,6 +570,7 @@
           card.style.aspectRatio = img.naturalWidth + ' / ' + img.naturalHeight;
         }
       };
+      
       img.src = file;
     }
 
