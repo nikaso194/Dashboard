@@ -1,0 +1,283 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>TDC Dashboard</title>
+<style>
+  :root {
+    --bg-main: #060b16;
+    --bg-panel: #0a1220;
+    --border-subtle: #16233a;
+    --cyan: #22d3ee;
+    --text-primary: #eaf2ff;
+    --text-muted: #7f93b3;
+    --red: #e23f4f;
+  }
+
+  * { box-sizing: border-box; }
+
+  html, body {
+    margin: 0;
+    padding: 0;
+    background: var(--bg-main);
+    color: var(--text-primary);
+    font-family: 'Segoe UI', 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+    min-height: 100vh;
+  }
+
+  /* subtle ambient background */
+  body {
+    background-image:
+      radial-gradient(circle at 15% 10%, rgba(34,211,238,0.06), transparent 40%),
+      radial-gradient(circle at 85% 90%, rgba(99,102,241,0.05), transparent 45%);
+  }
+
+  /* ---------- Header ---------- */
+  header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 18px 32px;
+    background: linear-gradient(180deg, #0b1424 0%, #08111f 100%);
+    border-bottom: 1px solid var(--border-subtle);
+    box-shadow: 0 1px 0 rgba(34,211,238,0.15);
+    gap: 24px;
+    flex-wrap: wrap;
+  }
+
+  .brand {
+    display: flex;
+    align-items: center;
+    gap: 18px;
+    font-weight: 800;
+    font-size: 1.5rem;
+    letter-spacing: 0.06em;
+    color: var(--cyan);
+    text-shadow: 0 0 18px rgba(34,211,238,0.55);
+    white-space: nowrap;
+  }
+
+  .brand .divider {
+    width: 1px;
+    height: 26px;
+    background: linear-gradient(180deg, transparent, var(--cyan), transparent);
+    opacity: 0.7;
+  }
+
+  .header-controls {
+    display: flex;
+    align-items: center;
+    gap: 14px;
+    flex: 1;
+    justify-content: flex-end;
+    flex-wrap: wrap;
+  }
+
+  .date-field, .search-field {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    background: #0c1626;
+    border: 1px solid var(--border-subtle);
+    border-radius: 8px;
+    padding: 10px 16px;
+    color: var(--text-primary);
+    font-size: 0.9rem;
+    min-width: 200px;
+  }
+
+  .search-field {
+    min-width: 260px;
+    color: var(--text-muted);
+  }
+
+  .date-field svg { flex-shrink: 0; color: var(--cyan); }
+
+  .logout-btn {
+    background: transparent;
+    border: 1px solid var(--red);
+    color: var(--red);
+    padding: 10px 22px;
+    border-radius: 8px;
+    font-size: 0.9rem;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    white-space: nowrap;
+  }
+
+  .logout-btn:hover {
+    background: rgba(226,63,79,0.1);
+    box-shadow: 0 0 14px rgba(226,63,79,0.35);
+  }
+
+  /* ---------- Main grid ---------- */
+  main {
+    padding: 36px;
+    max-width: 1600px;
+    margin: 0 auto;
+  }
+
+  .grid {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 24px;
+  }
+
+  @media (max-width: 1100px) {
+    .grid { grid-template-columns: repeat(2, 1fr); }
+  }
+  @media (max-width: 620px) {
+    .grid { grid-template-columns: 1fr; }
+    header { padding: 16px 20px; }
+  }
+
+  /* ---------- Card ---------- */
+  .card {
+    position: relative;
+    display: block;
+    width: 100%;
+    aspect-ratio: 16 / 10;
+    border: none;
+    border-radius: 16px;
+    padding: 0;
+    cursor: pointer;
+    overflow: hidden;
+    background: #0c1626; /* fallback while image placeholder is swapped in */
+    transition: transform 0.25s ease, box-shadow 0.25s ease;
+    outline: none;
+  }
+
+  .card:hover,
+  .card:focus-visible {
+    transform: translateY(-4px);
+    box-shadow: 0 12px 30px rgba(0,0,0,0.45);
+  }
+
+  .card:focus-visible {
+    outline: 2px solid var(--cyan);
+    outline-offset: 3px;
+  }
+
+  .card img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    display: block;
+    border-radius: 16px;
+  }
+
+  /* Placeholder styling: shown until real images are dropped in.
+     Once you replace the src on the <img> tags below, this label
+     and dashed outline disappear automatically since the image
+     covers the whole card. */
+  .card .placeholder-label {
+    position: absolute;
+    inset: 0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    text-align: center;
+    padding: 16px;
+    font-size: 0.85rem;
+    color: var(--text-muted);
+    border: 1px dashed var(--border-subtle);
+    border-radius: 16px;
+    background: #0c1626;
+    pointer-events: none;
+  }
+
+  footer {
+    text-align: center;
+    color: var(--text-muted);
+    font-size: 0.8rem;
+    padding: 20px;
+  }
+</style>
+</head>
+<body>
+
+<header>
+  <div class="brand">
+    TDC&nbsp;DASHBOARD
+    <span class="divider"></span>
+  </div>
+
+  <div class="header-controls">
+    <div class="date-field">
+      <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+        <rect x="3" y="4" width="18" height="18" rx="2"></rect>
+        <line x1="16" y1="2" x2="16" y2="6"></line>
+        <line x1="8" y1="2" x2="8" y2="6"></line>
+        <line x1="3" y1="10" x2="21" y2="10"></line>
+      </svg>
+      <span id="current-date">22-June-2026</span>
+    </div>
+
+    <div class="search-field">
+      <input type="text" placeholder="Search..." style="background:transparent;border:none;outline:none;color:inherit;font-size:0.9rem;width:100%;" />
+    </div>
+
+    <button class="logout-btn">Log Out</button>
+  </div>
+</header>
+
+<main>
+  <div class="grid">
+
+    <!-- Replace PLACEHOLDER_journal.png with your uploaded card image -->
+    <a class="card" href="#journal" aria-label="Journal">
+      <img src="journal.PNG" alt="Journal" onerror="this.style.display='none'">
+      <div class="placeholder-label">Journal<br>PLACEHOLDER_journal.png</div>
+    </a>
+
+    <!-- Replace PLACEHOLDER_backend.png with your uploaded card image -->
+    <a class="card" href="#backend" aria-label="Backend">
+      <img src="backend.PNG" alt="Backend" onerror="this.style.display='none'">
+      <div class="placeholder-label">Backend<br>PLACEHOLDER_backend.png</div>
+    </a>
+
+    <!-- Replace PLACEHOLDER_intrada_fxp.png with your uploaded card image -->
+    <a class="card" href="#intrada-fxp" aria-label="Intrada-FXP">
+      <img src="trade.PNG" alt="Intrada-FXP" onerror="this.style.display='none'">
+      <div class="placeholder-label">Intrada-FXP<br>PLACEHOLDER_intrada_fxp.png</div>
+    </a>
+
+    <!-- Replace PLACEHOLDER_history_fxp.png with your uploaded card image -->
+    <a class="card" href="#history-fxp" aria-label="History FXP">
+      <img src="tax.PNG" alt="History FXP" onerror="this.style.display='none'">
+      <div class="placeholder-label">History FXP<br>PLACEHOLDER_history_fxp.png</div>
+    </a>
+
+    <!-- Replace PLACEHOLDER_history_backend.png with your uploaded card image -->
+    <a class="card" href="#history-backend" aria-label="History Backend">
+      <img src="historybu.PNG" alt="History Backend" onerror="this.style.display='none'">
+      <div class="placeholder-label">History Backend<br>PLACEHOLDER_history_backend.png</div>
+    </a>
+
+    <!-- Replace PLACEHOLDER_history_journal.png with your uploaded card image -->
+    <a class="card" href="#history-journal" aria-label="History Journal">
+      <img src="historyjn.PNG" alt="History Journal" onerror="this.style.display='none'">
+      <div class="placeholder-label">History Journal<br>PLACEHOLDER_history_journal.png</div>
+    </a>
+
+    <!-- Replace PLACEHOLDER_faqs.png with your uploaded card image -->
+    <a class="card" href="#faqs" aria-label="FAQs">
+      <img src="faq.PNG" alt="FAQs" onerror="this.style.display='none'">
+      <div class="placeholder-label">FAQs<br>PLACEHOLDER_faqs.png</div>
+    </a>
+
+    <!-- Replace PLACEHOLDER_top_clients.png with your uploaded card image -->
+    <a class="card" href="#top-clients" aria-label="Top Clients">
+      <img src="topcl.PNG" alt="Top Clients" onerror="this.style.display='none'">
+      <div class="placeholder-label">Top Clients<br>PLACEHOLDER_top_clients.png</div>
+    </a>
+
+  </div>
+</main>
+
+<footer>TDC Dashboard</footer>
+
+</body>
+</html>>

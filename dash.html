@@ -1,0 +1,580 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>TDC Dashboard</title>
+<style>
+  :root {
+    --bg-main: #060b16;
+    --bg-panel: #0a1220;
+    --border-subtle: #16233a;
+    --cyan: #22d3ee;
+    --text-primary: #eaf2ff;
+    --text-muted: #7f93b3;
+    --red: #e23f4f;
+  }
+
+  * { box-sizing: border-box; }
+
+  html, body {
+    margin: 0;
+    padding: 0;
+    background: var(--bg-main);
+    color: var(--text-primary);
+    font-family: 'Segoe UI', 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+    min-height: 100vh;
+  }
+
+  /* subtle ambient background */
+  body {
+    background-image:
+      radial-gradient(circle at 15% 10%, rgba(34,211,238,0.06), transparent 40%),
+      radial-gradient(circle at 85% 90%, rgba(99,102,241,0.05), transparent 45%);
+  }
+
+  /* ---------- Layout shell (sidebar + main) ---------- */
+  .app-shell {
+    display: flex;
+    min-height: 100vh;
+  }
+
+  /* ---------- Sidebar ---------- */
+  .sidebar {
+    width: 250px;
+    flex-shrink: 0;
+    background: linear-gradient(180deg, #0b1424 0%, #08111f 100%);
+    border-right: 1px solid var(--border-subtle);
+    display: flex;
+    flex-direction: column;
+    padding: 22px 18px;
+    position: relative;
+  }
+
+  .sidebar .logo {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding: 0 4px 22px 4px;
+  }
+
+  .sidebar .logo-badge {
+    width: 38px;
+    height: 38px;
+    border-radius: 10px;
+    background: linear-gradient(135deg, var(--cyan), #6366f1);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-weight: 800;
+    font-size: 1.1rem;
+    color: #06111f;
+    flex-shrink: 0;
+  }
+
+  .sidebar .logo-text {
+    line-height: 1.15;
+    white-space: nowrap;
+  }
+
+  .sidebar .logo-text .l1 {
+    font-weight: 800;
+    font-size: 0.92rem;
+    letter-spacing: 0.05em;
+    color: var(--text-primary);
+  }
+
+  .sidebar .logo-text .l2 {
+    font-weight: 700;
+    font-size: 0.78rem;
+    letter-spacing: 0.08em;
+    color: var(--cyan);
+  }
+
+  .sidebar .section-label {
+    font-size: 0.68rem;
+    font-weight: 700;
+    letter-spacing: 0.1em;
+    color: #55688a;
+    padding: 14px 10px 6px 10px;
+    text-transform: uppercase;
+  }
+
+  .sidebar nav {
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+  }
+
+  .sidebar a.nav-link {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    padding: 10px 12px;
+    border-radius: 9px;
+    color: var(--text-muted);
+    text-decoration: none;
+    font-size: 0.88rem;
+    font-weight: 500;
+    transition: all 0.15s ease;
+  }
+
+  .sidebar a.nav-link .dot {
+    width: 7px;
+    height: 7px;
+    border-radius: 50%;
+    background: var(--link-accent, var(--cyan));
+    flex-shrink: 0;
+    box-shadow: 0 0 8px var(--link-accent, var(--cyan));
+  }
+
+  .sidebar a.nav-link:hover {
+    color: var(--text-primary);
+    background: rgba(255,255,255,0.04);
+  }
+
+  .sidebar a.nav-link.active {
+    color: var(--text-primary);
+    background: color-mix(in srgb, var(--link-accent, var(--cyan)) 16%, transparent);
+    box-shadow: inset 2px 0 0 var(--link-accent, var(--cyan));
+  }
+
+  .sidebar .collapse-btn {
+    position: absolute;
+    top: 190px;
+    right: -12px;
+    width: 24px;
+    height: 24px;
+    border-radius: 50%;
+    background: #0c1626;
+    border: 1px solid var(--border-subtle);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: var(--text-muted);
+    z-index: 5;
+  }
+
+  .sidebar .collapse-btn svg { width: 13px; height: 13px; }
+
+  .sidebar .sidebar-footer {
+    margin-top: auto;
+    padding-top: 14px;
+  }
+
+  .main-area {
+    flex: 1;
+    min-width: 0;
+    display: flex;
+    flex-direction: column;
+  }
+
+  @media (max-width: 900px) {
+    .app-shell { flex-direction: column; }
+    .sidebar {
+      width: 100%;
+      flex-direction: row;
+      overflow-x: auto;
+      padding: 12px;
+      align-items: center;
+    }
+    .sidebar .logo { padding: 0 14px 0 4px; }
+    .sidebar .section-label { display: none; }
+    .sidebar nav { flex-direction: row; }
+    .sidebar a.nav-link { white-space: nowrap; }
+    .sidebar .collapse-btn { display: none; }
+    .sidebar .sidebar-footer { margin-top: 0; }
+  }
+
+  /* ---------- Welcome heading ---------- */
+  .top-row {
+    display: flex;
+    align-items: flex-start;
+    justify-content: space-between;
+    gap: 20px;
+    flex-wrap: wrap;
+    padding: 30px 36px 0 36px;
+  }
+
+  .welcome h1 {
+    margin: 0;
+    font-size: 1.85rem;
+    font-weight: 800;
+    background: linear-gradient(90deg, #22d3ee, #6366f1, #a855f7);
+    -webkit-background-clip: text;
+    background-clip: text;
+    color: transparent;
+  }
+
+  .welcome p {
+    margin: 6px 0 0 0;
+    color: var(--text-muted);
+    font-size: 0.95rem;
+  }
+
+  .status-pill {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    background: #0c1626;
+    border: 1px solid var(--border-subtle);
+    padding: 10px 18px;
+    border-radius: 999px;
+    font-size: 0.85rem;
+    color: var(--text-muted);
+    white-space: nowrap;
+  }
+
+  .status-pill .clock {
+    color: var(--text-primary);
+    font-weight: 600;
+  }
+
+  .logout-btn {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    background: rgba(226,63,79,0.08);
+    border: 1px solid var(--red);
+    color: var(--red);
+    padding: 11px 14px;
+    border-radius: 9px;
+    font-size: 0.88rem;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    white-space: nowrap;
+  }
+
+  .logout-btn:hover {
+    background: rgba(226,63,79,0.16);
+    box-shadow: 0 0 14px rgba(226,63,79,0.35);
+  }
+
+  /* ---------- Main grid ---------- */
+  main {
+    padding: 22px 36px 36px 36px;
+    max-width: 1600px;
+    margin: 0 auto;
+    width: 100%;
+  }
+
+  .grid {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 26px;
+  }
+
+  @media (max-width: 900px) {
+    .grid { grid-template-columns: 1fr; }
+  }
+
+  /* ---------- Card (full image background, text overlaid) ---------- */
+  .card {
+    position: relative;
+    display: flex;
+    align-items: flex-end;
+    width: 100%;
+    min-height: 280px;
+    aspect-ratio: 16 / 8;
+    border-radius: 18px;
+    padding: 0;
+    cursor: pointer;
+    overflow: hidden;
+    text-decoration: none;
+    color: var(--text-primary);
+    border: 1px solid var(--card-accent, #2a3a55);
+    background: #060b16;
+    box-shadow: 0 0 24px -10px var(--card-accent, transparent);
+    transition: transform 0.25s ease, box-shadow 0.25s ease;
+    outline: none;
+  }
+
+  .card:hover,
+  .card:focus-visible {
+    transform: translateY(-4px);
+    box-shadow: 0 14px 34px rgba(0,0,0,0.45), 0 0 30px -6px var(--card-accent, transparent);
+  }
+
+  .card:focus-visible {
+    outline: 2px solid var(--card-accent, var(--cyan));
+    outline-offset: 3px;
+  }
+
+  .card .bg-img {
+    position: absolute;
+    inset: 0;
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    z-index: 0;
+  }
+
+  .card .overlay-gradient {
+    position: absolute;
+    inset: 0;
+    background: linear-gradient(0deg, rgba(4,8,16,0.92) 0%, rgba(4,8,16,0.55) 42%, rgba(4,8,16,0.05) 75%);
+    z-index: 1;
+  }
+
+  .card .text-block {
+    position: relative;
+    z-index: 2;
+    padding: 28px 32px 26px 28px;
+    width: 100%;
+  }
+
+  .card .text-block h3 {
+    margin: 0 0 8px 0;
+    font-size: 1.55rem;
+    font-weight: 800;
+    letter-spacing: 0.01em;
+    text-shadow: 0 2px 10px rgba(0,0,0,0.6);
+  }
+
+  .card .text-block p {
+    margin: 0;
+    font-size: 1rem;
+    line-height: 1.45;
+    color: #d5e0f0;
+    text-shadow: 0 2px 8px rgba(0,0,0,0.6);
+  }
+
+  /* Placeholder styling: shown until a matching image file is found. */
+  .card .placeholder-label {
+    position: absolute;
+    inset: 0;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 6px;
+    text-align: center;
+    padding: 16px;
+    font-size: 0.85rem;
+    color: var(--text-muted);
+    background: #0c1626;
+    z-index: 3;
+    pointer-events: none;
+  }
+
+  .card .placeholder-label .name {
+    color: var(--text-primary);
+    font-weight: 600;
+  }
+
+  .card .placeholder-label .tried {
+    font-size: 0.72rem;
+    color: #55688a;
+    word-break: break-all;
+    max-width: 90%;
+  }
+
+  footer {
+    text-align: center;
+    color: var(--text-muted);
+    font-size: 0.8rem;
+    padding: 20px;
+  }
+</style>
+</head>
+<body>
+
+<div class="app-shell">
+
+  <aside class="sidebar">
+    <div class="logo">
+      <div class="logo-badge">T</div>
+      <div class="logo-text">
+        <div class="l1">TDC</div>
+        <div class="l2">DASHBOARD</div>
+      </div>
+    </div>
+
+    <div class="section-label">Main</div>
+    <nav>
+      <a class="nav-link active" href="#dashboard" style="--link-accent:#22d3ee"><span class="dot"></span>Dashboard</a>
+      <a class="nav-link" href="#journal" style="--link-accent:#3b82f6"><span class="dot"></span>Journal</a>
+      <a class="nav-link" href="#backend" style="--link-accent:#14b8a6"><span class="dot"></span>Backend</a>
+      <a class="nav-link" href="#intrada-fxp" style="--link-accent:#f59e0b"><span class="dot"></span>Intrada-FXP</a>
+    </nav>
+
+    <div class="section-label">History</div>
+    <nav>
+      <a class="nav-link" href="#history-fxp" style="--link-accent:#f59e0b"><span class="dot"></span>History FXP</a>
+      <a class="nav-link" href="#history-backend" style="--link-accent:#2dd4bf"><span class="dot"></span>History Backend</a>
+      <a class="nav-link" href="#history-journal" style="--link-accent:#3b82f6"><span class="dot"></span>History Journal</a>
+    </nav>
+
+    <button class="collapse-btn" aria-label="Collapse sidebar">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="15 18 9 12 15 6"></polyline></svg>
+    </button>
+
+    <div class="section-label">More</div>
+    <nav>
+      <a class="nav-link" href="#faqs" style="--link-accent:#a855f7"><span class="dot"></span>FAQs</a>
+      <a class="nav-link" href="#top-clients" style="--link-accent:#a855f7"><span class="dot"></span>Top Clients</a>
+    </nav>
+
+    <div class="sidebar-footer">
+      <button class="logout-btn" style="width:100%;">Log Out</button>
+    </div>
+  </aside>
+
+  <div class="main-area">
+
+  <div class="top-row">
+    <div class="welcome">
+      <h1>Welcome, SOLITA!</h1>
+      <p>Please Enjoy your work!</p>
+    </div>
+    <div class="status-pill">
+      Open in Working Time · <span class="clock" id="live-clock">--:--</span>
+    </div>
+  </div>
+
+<main>
+  <div class="grid">
+
+    <a class="card" href="#journal" style="--card-accent:#3b82f6" data-name="Journal"
+       data-candidates="journal.PNG,journal.png,Journal.PNG,Journal.png,journal.jpg,journal.jpeg">
+      <img class="bg-img" alt="Journal">
+      <div class="overlay-gradient"></div>
+      <div class="text-block">
+        <h3>JOURNAL</h3>
+        <p>Manage all Journal entries</p>
+      </div>
+      <div class="placeholder-label"><span class="name">Journal</span><span class="tried"></span></div>
+    </a>
+
+    <a class="card" href="#backend" style="--card-accent:#14b8a6" data-name="Backend"
+       data-candidates="backend.PNG,backend.png,Backend.PNG,Backend.png,backend.jpg,backend.jpeg">
+      <img class="bg-img" alt="Backend">
+      <div class="overlay-gradient"></div>
+      <div class="text-block">
+        <h3>BACKEND</h3>
+        <p>Manage Backend operations</p>
+      </div>
+      <div class="placeholder-label"><span class="name">Backend</span><span class="tried"></span></div>
+    </a>
+
+    <a class="card" href="#intrada-fxp" style="--card-accent:#f59e0b" data-name="Intrada-FXP"
+       data-candidates="trade.PNG,trade.png,Trade.PNG,Trade.png,trade.jpg,trade.jpeg">
+      <img class="bg-img" alt="Intrada-FXP">
+      <div class="overlay-gradient"></div>
+      <div class="text-block">
+        <h3>INTRADA-FXP</h3>
+        <p>Track Intraday FXP transactions</p>
+      </div>
+      <div class="placeholder-label"><span class="name">Intrada-FXP</span><span class="tried"></span></div>
+    </a>
+
+    <a class="card" href="#history-fxp" style="--card-accent:#f59e0b" data-name="History FXP"
+       data-candidates="tax.PNG,tax.png,Tax.PNG,Tax.png,tax.jpg,tax.jpeg">
+      <img class="bg-img" alt="History FXP">
+      <div class="overlay-gradient"></div>
+      <div class="text-block">
+        <h3>HISTORY FXP</h3>
+        <p>View Intraday history</p>
+      </div>
+      <div class="placeholder-label"><span class="name">History FXP</span><span class="tried"></span></div>
+    </a>
+
+    <a class="card" href="#history-backend" style="--card-accent:#2dd4bf" data-name="History Backend"
+       data-candidates="historybu.PNG,historybu.png,Historybu.PNG,HistoryBu.png,historybu.jpg,historybu.jpeg">
+      <img class="bg-img" alt="History Backend">
+      <div class="overlay-gradient"></div>
+      <div class="text-block">
+        <h3>HISTORY BACKEND</h3>
+        <p>View Backend history</p>
+      </div>
+      <div class="placeholder-label"><span class="name">History Backend</span><span class="tried"></span></div>
+    </a>
+
+    <a class="card" href="#history-journal" style="--card-accent:#3b82f6" data-name="History Journal"
+       data-candidates="historyjn.PNG,historyjn.png,Historyjn.PNG,HistoryJn.png,historyjn.jpg,historyjn.jpeg">
+      <img class="bg-img" alt="History Journal">
+      <div class="overlay-gradient"></div>
+      <div class="text-block">
+        <h3>HISTORY JOURNAL</h3>
+        <p>View Journal history</p>
+      </div>
+      <div class="placeholder-label"><span class="name">History Journal</span><span class="tried"></span></div>
+    </a>
+
+    <a class="card" href="#faqs" style="--card-accent:#a855f7" data-name="FAQs"
+       data-candidates="faq.PNG,faq.png,Faq.PNG,FAQ.png,faq.jpg,faq.jpeg">
+      <img class="bg-img" alt="FAQs">
+      <div class="overlay-gradient"></div>
+      <div class="text-block">
+        <h3>FAQS</h3>
+        <p>Ask your questions with AI</p>
+      </div>
+      <div class="placeholder-label"><span class="name">FAQs</span><span class="tried"></span></div>
+    </a>
+
+    <a class="card" href="#top-clients" style="--card-accent:#a855f7" data-name="Top Clients"
+       data-candidates="topcl.PNG,topcl.png,Topcl.PNG,TopCl.png,topcl.jpg,topcl.jpeg">
+      <img class="bg-img" alt="Top Clients">
+      <div class="overlay-gradient"></div>
+      <div class="text-block">
+        <h3>TOP CLIENTS</h3>
+        <p>See all Top clients</p>
+      </div>
+      <div class="placeholder-label"><span class="name">Top Clients</span><span class="tried"></span></div>
+    </a>
+
+  </div>
+  </main>
+
+  <footer>TDC Dashboard</footer>
+
+  </div><!-- /.main-area -->
+</div><!-- /.app-shell -->
+
+<script>
+  // For each card, try every candidate filename/case/extension in order.
+  // The first one that actually loads is kept; if all fail, the dashed
+  // placeholder stays visible and shows exactly which paths were tried.
+  document.querySelectorAll('.card').forEach(function (card) {
+    const img = card.querySelector('.bg-img');
+    const label = card.querySelector('.placeholder-label .tried');
+    const candidates = card.dataset.candidates.split(',').map(function (s) { return s.trim(); });
+    let i = 0;
+    const attempted = [];
+
+    function tryNext() {
+      if (i >= candidates.length) {
+        img.style.display = 'none';
+        if (label) {
+          label.textContent = 'Tried: ' + attempted.join(', ');
+        }
+        return;
+      }
+      const file = candidates[i++];
+      attempted.push(file);
+      img.onerror = tryNext;
+      img.onload = function () {
+        card.querySelector('.placeholder-label').style.display = 'none';
+      };
+      img.src = file;
+    }
+
+    tryNext();
+  });
+
+  function updateClock() {
+    const el = document.getElementById('live-clock');
+    if (!el) return;
+    const now = new Date();
+    const h = String(now.getHours()).padStart(2, '0');
+    const m = String(now.getMinutes()).padStart(2, '0');
+    el.textContent = h + ':' + m;
+  }
+  updateClock();
+  setInterval(updateClock, 30000);
+</script>
+
+</body>
+</html>
