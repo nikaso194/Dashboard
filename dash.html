@@ -321,14 +321,16 @@
     pointer-events: none;
   }
 
-  .card .text-block {
+.card .text-block {
     position: absolute;
     z-index: 2;
-    top: 9%;
+    top: 50%;
     right: 8%;
+    transform: translateY(-50%);
     text-align: right;
-    max-width: 60%;
-  }
+    max-width: 55%;
+    padding-bottom: 15%; /* keeps text clear of the arrow icon in the bottom-right */
+}
 
   .card .text-block h3 {
     margin: 0 0 6px 0;
